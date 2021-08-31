@@ -11,7 +11,7 @@ namespace ApiMethods1.OrbitApi
     {
         private string _baseUrl = "";
         private string _dataview = "";
-        private string _authToken = "";
+        public string _authToken = "";
 
         public ApiComms(string passedInBaseUrl, string dataviewPassedIn)
         {
