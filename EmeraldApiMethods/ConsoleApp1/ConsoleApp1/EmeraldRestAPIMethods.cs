@@ -11,23 +11,26 @@ using System.Text;
 
 namespace GroupApi
 {
-    public class RestAPIMethods
+    public class EmeraldRestAPIMethods
     {
         private string _baseUrl = "";
         public string _authToken = "";
         public string responseResult = "";
 
-        public SimpleLogin LoginStuff = new SimpleLogin();
-        public List<SimpleLogin> _logInStuff1 = new List<SimpleLogin>();
+        public EmeraldsSimpleLogin LoginStuff = new EmeraldsSimpleLogin();
+        public List<EmeraldsSimpleLogin> _logInStuff1 = new List<EmeraldsSimpleLogin>();
 
+        public IRestResponse<EmeraldsAudiences.Root> audienceListResponse;
         public string returnAudID = "";
         public string audienceDefinition;
         public AudienceDetails.Root singleAudience;
 
+        public List<string> dashboardTitles;
         public string returnDashID = "";
         public string dashboardDefinition;
         public DashboardDetails.Root singleDashboard;
 
+        public List<string> collectionTitles;
         public string returnCollID = "";
         public string collectionDefinition;
         public CollectionDetails.Root singleCollection;
@@ -42,11 +45,27 @@ namespace GroupApi
 
         public string jsonOutput;
 
-        public RestAPIMethods(string baseUrl)
+        public EmeraldRestAPIMethods(string baseUrl)
         {
             _baseUrl = baseUrl;
         }
 
+        // public string folderPath = @"C:\Users\temp";
+
+        public void CheckIfTempFolder()
+        {
+            string root = @"C:\Users\emera\temp";
+            string subdir = @"C:\Users\emera\temp\OrbitTests"; // can i get rid of emera
+            // If directory does not exist, create it. 
+            if (!Directory.Exists(root))
+            {
+                Directory.CreateDirectory(root);
+            }
+            if (!Directory.Exists(subdir))
+            {
+                Directory.CreateDirectory(subdir);
+            }
+        }
         public void GetAuthToken()
         {
             var url = string.Join("/", _baseUrl, "Test/Sessions/SimpleLogin");
@@ -60,8 +79,9 @@ namespace GroupApi
             request.AddParameter("UserLogin", "JohnS");
             request.AddParameter("Password", "Password@2");
 
-            IRestResponse<SimpleLogin.Root> response = client.Execute<SimpleLogin.Root>(request);
-            _authToken = response.Data.accessToken;
+
+            IRestResponse<EmeraldsSimpleLogin.Root> response = client.Execute<EmeraldsSimpleLogin.Root>(request);
+            _authToken = response.Data._accessToken;
 
             responseResult = "";
             if (response.IsSuccessful)
@@ -86,7 +106,7 @@ namespace GroupApi
 
         #region Get titles and definitions
 
-        public void GetAudiences(string count = "10")
+        public void GetAudiences(string count = "1000")
         {
             /* Once authorised, ask API for list of audiences
              * Find correct endpoint
@@ -106,17 +126,19 @@ namespace GroupApi
             IRestClient client = new RestClient(url);
             IRestRequest request = new RestRequest("", Method.GET);
 
-            //request.AddParameter("dataViewName", "Test");
-            //request.AddParameter("UserLogin", "JohnS");
-            //request.AddParameter("Password", "Password@2");
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Audiences.Root> response = client.Execute<Audiences.Root>(request);
+            audienceListResponse = client.Execute<EmeraldsAudiences.Root>(request);
             // _authToken = response.Data.accessToken;
 
-            List<string> audienceTitles = new List<string>();
+            // putAudiencesInList(audienceListResponse);
+        }
 
-            foreach (var item in response.Data.list)
+
+        public List<string> putAudiencesInList(IRestResponse<EmeraldsAudiences.Root> audList)
+        {
+            List<string> audienceTitles = new List<string>();
+            foreach (var item in audienceListResponse.Data.list)
 
             {
                 var title = item.title;
@@ -141,12 +163,12 @@ namespace GroupApi
             {
                 Console.WriteLine("Audience Title: " + title);
             }
-            Console.ReadLine();
-        }
+            return audienceTitles;
+    }
 
-        public void GetDashboards()
+        public void GetDashboards(string count = "100")
         {
-            var url = string.Join("/", _baseUrl, "Test/Users/JSmith/Dashboards?count=1000&doSystemLookup=false");
+            var url = string.Join("/", _baseUrl, $"Test/Users/JSmith/Dashboards?count={count}");
             // Call the version endpoint of the orbit API
 
             IRestClient client = new RestClient(url);
@@ -154,8 +176,8 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Dashboards.Root> response = client.Execute<Dashboards.Root>(request);
-            List<string> dashboardTitles = new List<string>();
+            IRestResponse<EmeraldsDashboards.Root> response = client.Execute<EmeraldsDashboards.Root>(request);
+            dashboardTitles = new List<string>();
 
             foreach (var item in response.Data.list)
 
@@ -168,10 +190,9 @@ namespace GroupApi
             {
                 Console.WriteLine("Dashboard Title: " + title);
             }
-            Console.ReadLine();
         }
 
-        public void GetCollections()
+        public void GetCollections(string count = "1000")
         {
             var url = string.Join("/", _baseUrl, "Test/Collections?count=1000");
             // Call the version endpoint of the orbit API
@@ -181,9 +202,9 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Collections.Root> response = client.Execute<Collections.Root>(request);
+            IRestResponse<EmeraldsCollections.Root> response = client.Execute<EmeraldsCollections.Root>(request);
 
-            List<string> collectionTitles = new List<string>();
+            collectionTitles = new List<string>();
 
             foreach (var item in response.Data.list)
             {
@@ -195,10 +216,9 @@ namespace GroupApi
             {
                 Console.WriteLine("Collection Title: " + title);
             }
-            Console.ReadLine();
         }
 
-        public void GetCompositions()
+        public void GetCompositions(string count = "1000")
         {
             var url = string.Join("/", _baseUrl, "Test/AudienceCompositions?count=1000");
             // Call the version endpoint of the orbit API
@@ -208,7 +228,7 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Compositions.Root> response = client.Execute<Compositions.Root>(request);
+            IRestResponse<EmeraldsCompositions.Root> response = client.Execute<EmeraldsCompositions.Root>(request);
 
             List<string> compositionDescription = new List<string>();
 
@@ -222,10 +242,9 @@ namespace GroupApi
             {
                 Console.WriteLine("Audience Composition Description: " + description);
             }
-            Console.ReadLine();
         }
 
-        public void GetCampaigns()
+        public void GetCampaigns(string count = "1000")
         {
             var url = string.Join("/", _baseUrl, "Test/PeopleStage/Test/Elements?count=1000");
             // Call the version endpoint of the orbit API
@@ -235,7 +254,7 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Campaigns.Root> response = client.Execute<Campaigns.Root>(request);
+            IRestResponse<EmeraldsCampaigns.Root> response = client.Execute<EmeraldsCampaigns.Root>(request);
 
             List<string> campaignDescription = new List<string>();
 
@@ -267,7 +286,7 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Audiences.Root> responseAudience = client.Execute<Audiences.Root>(request);
+            IRestResponse<EmeraldsAudiences.Root> responseAudience = client.Execute<EmeraldsAudiences.Root>(request);
 
             string gotId = "";
             string gotTitle = "";
@@ -343,16 +362,16 @@ namespace GroupApi
             return audienceDefinition;
         }
 
-        public void ConvertAudToJsonAndSave(string audienceDefinition)
+        public void AudJsonSave(string audienceDefinition)
         {
-            string filelocation = @"C:\Users\eliu\temp\audience.json";
+            string filelocation = @"C:\Users\temp\audience.json";
 
             File.WriteAllText(filelocation, audienceDefinition);
 
             // Talk to user
             Console.WriteLine("Audience definition successfully saved to file");
 
-            Console.ReadLine();
+            // Console.ReadLine();
         }
 
         #endregion Getting specific Audience
@@ -361,7 +380,7 @@ namespace GroupApi
 
         public AudienceDetails.Root GetAudJsonFromFile()
         {
-            string audienceJson = File.ReadAllText(@"C:\Users\eliu\temp\audience.json");
+            string audienceJson = File.ReadAllText(@"C:\Users\temp\audience.json");
 
             singleAudience = JsonConvert.DeserializeObject<AudienceDetails.Root>(audienceDefinition);
 
@@ -419,7 +438,7 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Dashboards.Root> responseDashboard = client.Execute<Dashboards.Root>(request);
+            IRestResponse<EmeraldsDashboards.Root> responseDashboard = client.Execute<EmeraldsDashboards.Root>(request);
 
             string gotId = "";
             string gotTitle = "";
@@ -497,7 +516,7 @@ namespace GroupApi
 
         public void ConvertDashToJsonAndSave(string dashboardDefinition)
         {
-            string filelocation = @"C:\Users\eliu\temp\dashboard.json";
+            string filelocation = @"C:\Users\temp\dashboard.json";
 
             File.WriteAllText(filelocation, dashboardDefinition);
 
@@ -513,7 +532,7 @@ namespace GroupApi
 
         public DashboardDetails.Root GetDashJsonFromFile()
         {
-            string dashboardJson = File.ReadAllText(@"C:\Users\eliu\temp\dashboard.json");
+            string dashboardJson = File.ReadAllText(@"C:\Users\temp\dashboard.json");
 
             var singleDashboard = JsonConvert.DeserializeObject<DashboardDetails.Root>(dashboardJson);
 
@@ -532,11 +551,11 @@ namespace GroupApi
         {
             var result1 = JsonConvert.SerializeObject(dashboardObject);
 
-            string filelocation = @"C:\Users\eliu\temp\dashboardNewTitle.json";
+            string filelocation = @"C:\Users\temp\dashboardNewTitle.json";
 
             File.WriteAllText(filelocation, result1);
 
-            string result = File.ReadAllText(@"C:\Users\eliu\temp\dashboardNewTitle.json");
+            string result = File.ReadAllText(@"C:\Users\temp\dashboardNewTitle.json");
 
             return result;
         }
@@ -577,7 +596,7 @@ namespace GroupApi
             IRestClient client = new RestClient(url);
             IRestRequest request = new RestRequest("", Method.GET);
             request.AddHeader("Authorization", $"Bearer {_authToken}");
-            IRestResponse<Dashboards.Root> response = client.Execute<Dashboards.Root>(request);
+            IRestResponse<EmeraldsDashboards.Root> response = client.Execute<EmeraldsDashboards.Root>(request);
             var responseResult = "";
             if (response.IsSuccessful)
             {
@@ -589,7 +608,7 @@ namespace GroupApi
             }
             try
             {
-                string fullPath = @"C:\Users\eliu\temp\dashboard.json";
+                string fullPath = @"C:\Users\temp\dashboard.json";
                 File.WriteAllText(fullPath, string.Empty);
                 File.WriteAllText(fullPath, responseResult);
             }
@@ -603,7 +622,7 @@ namespace GroupApi
 
         private void ReadAllDashboardData()
         {
-            string fullPath = @"C:\Users\eliu\temp\dashboard.json";
+            string fullPath = @"C:\Users\temp\dashboard.json";
             var DashboardJSON = File.ReadAllText(fullPath);
             DeserializeDashboardObject(DashboardJSON);
         }
@@ -620,7 +639,7 @@ namespace GroupApi
             string NewDashboardJsonData = JsonConvert.SerializeObject(dashboard);
             try
             {
-                string newDashboardFullPath = @"C:\Users\eliu\temp\dashboard.json";
+                string newDashboardFullPath = @"C:\Users\temp\dashboard.json";
                 File.WriteAllText(newDashboardFullPath, string.Empty);
                 File.WriteAllText(newDashboardFullPath, NewDashboardJsonData);
             }
@@ -668,7 +687,7 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Collections.Root> responseCollection = client.Execute<Collections.Root>(request);
+            IRestResponse<EmeraldsCollections.Root> responseCollection = client.Execute<EmeraldsCollections.Root>(request);
 
             string gotId = "";
             string gotTitle = "";
@@ -746,7 +765,7 @@ namespace GroupApi
 
         public void ConvertCollToJsonAndSave(string collectionDefinition)
         {
-            string filelocation = @"C:\Users\eliu\temp\collection.json";
+            string filelocation = @"C:\Users\temp\collection.json";
 
             File.WriteAllText(filelocation, collectionDefinition);
 
@@ -758,7 +777,7 @@ namespace GroupApi
 
         public CollectionDetails.Root GetCollJsonFromFile()
         {
-            string collectionJson = File.ReadAllText(@"C:\Users\eliu\temp\collection.json");
+            string collectionJson = File.ReadAllText(@"C:\Users\temp\collection.json");
 
             singleCollection = JsonConvert.DeserializeObject<CollectionDetails.Root>(collectionDefinition);
 
@@ -816,7 +835,7 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Compositions.Root> responseComposition = client.Execute<Compositions.Root>(request);
+            IRestResponse<EmeraldsCompositions.Root> responseComposition = client.Execute<EmeraldsCompositions.Root>(request);
 
             string gotId = "";
             string gotDescription = "";
@@ -894,7 +913,7 @@ namespace GroupApi
 
         public void ConvertCompToJsonAndSave(string audienceDefinition)
         {
-            string filelocation = @"C:\Users\eliu\temp\composition.json";
+            string filelocation = @"C:\Users\temp\composition.json";
 
             File.WriteAllText(filelocation, compositionDefinition);
 
@@ -910,7 +929,7 @@ namespace GroupApi
 
         public CompositionDetails.Root GetCompJsonFromFile()
         {
-            string compositionJson = File.ReadAllText(@"C:\Users\eliu\temp\composition.json");
+            string compositionJson = File.ReadAllText(@"C:\Users\temp\composition.json");
 
             singleComposition = JsonConvert.DeserializeObject<CompositionDetails.Root>(compositionDefinition);
 
@@ -969,7 +988,7 @@ namespace GroupApi
 
             request.AddHeader("Authorization", $"Bearer {_authToken}");
 
-            IRestResponse<Campaigns.Root> responseCampaign = client.Execute<Campaigns.Root>(request);
+            IRestResponse<EmeraldsCampaigns.Root> responseCampaign = client.Execute<EmeraldsCampaigns.Root>(request);
 
             string gotId = "";
             string gotDescription = "";
@@ -1047,7 +1066,7 @@ namespace GroupApi
 
         public void ConvertCampToJsonAndSave(string campaignDefinition)
         {
-            string filelocation = @"C:\Users\eliu\temp\campaign.json";
+            string filelocation = @"C:\Users\temp\campaign.json";
 
             File.WriteAllText(filelocation, campaignDefinition);
 
@@ -1063,7 +1082,7 @@ namespace GroupApi
 
         public CampaignDetails.Root GetCampJsonFromFile()
         {
-            string campaignJson = File.ReadAllText(@"C:\Users\eliu\temp\campaign.json");
+            string campaignJson = File.ReadAllText(@"C:\Users\temp\campaign.json");
 
             singleCampaign = JsonConvert.DeserializeObject<CampaignDetails.Root>(campaignJson);
 

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace ApiMethods1
 {
-    public class OrbitApiMethods
+    public class SmithOrbitApiMethods
     {
         public string _swaggerUrl = "https://cloudtest.faststats.co.uk/Test/OrbitAPI/swagger/ui/index.html";
         public string _apiUrl = "https://cloudtest.faststats.co.uk/Test/OrbitAPI/";
@@ -23,7 +23,7 @@ namespace ApiMethods1
 
         public ApiComms _ac;
 
-        public OrbitApiMethods(string loginEndPointPassedIn = "")
+        public SmithOrbitApiMethods(string loginEndPointPassedIn = "")
         {
             /*
              *
