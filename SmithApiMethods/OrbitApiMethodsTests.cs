@@ -64,7 +64,7 @@ namespace ApiMethods1
             _stopw.Stop();
 
             string testName = System.Reflection.MethodBase.GetCurrentMethod().Name;
-// I hate wednesdays so much
+            // I hate wednesdays so much me too I hate weds
             Assert.IsTrue(_stopw.Elapsed.TotalMilliseconds <= 1000);//if resultOfTest is true, this passes!
             RecordOnFile(testName, _stopw.Elapsed, _stopw.Elapsed.TotalMilliseconds <= 1000);
         }
