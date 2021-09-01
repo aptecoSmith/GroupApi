@@ -144,8 +144,120 @@ namespace GroupApi
             _eHelper.RecordOnFile(testName, _stopw.Elapsed, resultOfTest);
         }
 
+        [TestMethod]
+        public void GetCompositionsAndListTest()
+        {
+            _eApi.GetAuthToken();
+            _stopw.Start();
+
+            #region Get Composition List
+
+            _eApi.GetCompositions();
+
+            bool resultOfTest = false; // false as a default
+            if (_eApi.compositionDescriptions.Count == 100)
+            {
+                resultOfTest = true;
+            }
+            #endregion Get Composition List
+
+            _stopw.Stop();
+
+            string testName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            Assert.IsTrue(resultOfTest); //if resultOfTest is true, this passes!
+            _eHelper.RecordOnFile(testName, _stopw.Elapsed, resultOfTest);
+        }
+
+        [TestMethod]
+        public void GetCampaignsAndListTest()
+        {
+            _eApi.GetAuthToken();
+            _stopw.Start();
+
+            #region Get Campaigns List
+
+            _eApi.GetCampaigns();
+
+            bool resultOfTest = false; // false as a default
+            if (_eApi.campaignDescriptions.Count == 100)
+            {
+                resultOfTest = true;
+            }
+            #endregion Get Campaigns List
+
+            _stopw.Stop();
+
+            string testName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            Assert.IsTrue(resultOfTest); //if resultOfTest is true, this passes!
+            _eHelper.RecordOnFile(testName, _stopw.Elapsed, resultOfTest);
+        }
 
         #endregion Testing does it get what we want?
+
+        #region Audience tests
+        [TestMethod]
+        public void CheckValidIDAudienceTest()
+        {
+            // Input a valid ID, make sure the returnAudID gives the same ID 
+            _eApi.GetAuthToken();
+            _eApi.GetAudiences();
+
+            _stopw.Start();
+            _eApi.PickAudience(_eApi.audienceListResponse, "3");
+
+            bool resultOfTest;
+            if (_eApi.returnAudID == "3")
+            {
+                resultOfTest = true; 
+            }
+            else
+            {
+                resultOfTest = false;
+            }
+            _stopw.Stop();
+
+            Assert.IsTrue(resultOfTest); //if resultOfTest is true, this passes!
+
+            string testName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            Assert.IsTrue(resultOfTest); //if resultOfTest is true, this passes!
+            _eHelper.RecordOnFile(testName, _stopw.Elapsed, resultOfTest);
+        }
+
+        [TestMethod]
+        public void CheckValidNameAudienceTest()
+        {
+            // Input a valid ID, make sure the returnAudID gives the same ID 
+            _eApi.GetAuthToken();
+            _eApi.GetAudiences();
+
+            _stopw.Start();
+            _eApi.PickAudience(_eApi.audienceListResponse, "Men in Warwick");
+
+            bool resultOfTest;
+            if (_eApi.returnAudID == "5")
+            {
+                resultOfTest = true;
+            }
+            else
+            {
+                resultOfTest = false;
+            }
+            _stopw.Stop();
+
+            Assert.IsTrue(resultOfTest); //if resultOfTest is true, this passes!
+
+            string testName = System.Reflection.MethodBase.GetCurrentMethod().Name;
+
+            Assert.IsTrue(resultOfTest); //if resultOfTest is true, this passes!
+            _eHelper.RecordOnFile(testName, _stopw.Elapsed, resultOfTest);
+        }
+
+
+        #endregion Audience tests
+
 
         #region Tests with time thresholds
 

@@ -35,10 +35,12 @@ namespace GroupApi
         public string collectionDefinition;
         public CollectionDetails.Root singleCollection;
 
+        public List<string> compositionDescriptions;
         public string returnCompID = "";
         public string compositionDefinition;
         public CompositionDetails.Root singleComposition;
 
+        public List<string> campaignDescriptions;
         public string returnCampID = "";
         public string campaignDefinition;
         public CampaignDetails.Root singleCampaign;
@@ -192,9 +194,9 @@ namespace GroupApi
             }
         }
 
-        public void GetCollections(string count = "1000")
+        public void GetCollections(string count = "50")
         {
-            var url = string.Join("/", _baseUrl, "Test/Collections?count=1000");
+            var url = string.Join("/", _baseUrl, $"Test/Collections?count={count}");
             // Call the version endpoint of the orbit API
 
             IRestClient client = new RestClient(url);
@@ -218,9 +220,9 @@ namespace GroupApi
             }
         }
 
-        public void GetCompositions(string count = "1000")
+        public void GetCompositions(string count = "100")
         {
-            var url = string.Join("/", _baseUrl, "Test/AudienceCompositions?count=1000");
+            var url = string.Join("/", _baseUrl, $"Test/AudienceCompositions?count={count}");
             // Call the version endpoint of the orbit API
 
             IRestClient client = new RestClient(url);
@@ -230,23 +232,23 @@ namespace GroupApi
 
             IRestResponse<EmeraldsCompositions.Root> response = client.Execute<EmeraldsCompositions.Root>(request);
 
-            List<string> compositionDescription = new List<string>();
+            compositionDescriptions = new List<string>();
 
             foreach (var item in response.Data.list)
             {
                 var description = item.description;
-                compositionDescription.Add(description);
+                compositionDescriptions.Add(description);
             }
             // Loop through collection titles and print each item
-            foreach (var description in compositionDescription)
+            foreach (var description in compositionDescriptions)
             {
                 Console.WriteLine("Audience Composition Description: " + description);
             }
         }
 
-        public void GetCampaigns(string count = "1000")
+        public void GetCampaigns(string count = "100")
         {
-            var url = string.Join("/", _baseUrl, "Test/PeopleStage/Test/Elements?count=1000");
+            var url = string.Join("/", _baseUrl, $"Test/PeopleStage/Test/Elements?count={count}");
             // Call the version endpoint of the orbit API
 
             IRestClient client = new RestClient(url);
@@ -256,38 +258,27 @@ namespace GroupApi
 
             IRestResponse<EmeraldsCampaigns.Root> response = client.Execute<EmeraldsCampaigns.Root>(request);
 
-            List<string> campaignDescription = new List<string>();
+            campaignDescriptions = new List<string>();
 
             foreach (var item in response.Data.list)
 
             {
                 var description = item.description;
-                campaignDescription.Add(description);
+                campaignDescriptions.Add(description);
             }
             // Loop through collection titles and print each item
-            foreach (var description in campaignDescription)
+            foreach (var description in campaignDescriptions)
             {
                 Console.WriteLine("Campaign Description: " + description);
             }
-            Console.ReadLine();
         }
 
         #endregion Get titles and definitions
 
         #region Getting specific Audience
 
-        public string PickAudience(string audienceInput)
+        public string PickAudience(IRestResponse<EmeraldsAudiences.Root> responseAudience, string chooseNameOrId)
         {
-            var url = string.Join("/", _baseUrl, "Test/Audiences?count=1000");
-            // Call the version endpoint of the orbit API
-
-            IRestClient client = new RestClient(url);
-            IRestRequest request = new RestRequest("", Method.GET);
-
-            request.AddHeader("Authorization", $"Bearer {_authToken}");
-
-            IRestResponse<EmeraldsAudiences.Root> responseAudience = client.Execute<EmeraldsAudiences.Root>(request);
-
             string gotId = "";
             string gotTitle = "";
             int userGaveAnInt = 0;
@@ -301,17 +292,13 @@ namespace GroupApi
                 audienceData.Add(new KeyValuePair<string, string>(gotId, gotTitle));
             }
 
-            Console.WriteLine("Request a specific Audience by name or ID by changing input in Program");
-            Console.WriteLine("Press Enter when ready to continue...");
-            Console.ReadLine();
-
             // Handle input
-            bool isUserInputAInt = int.TryParse(audienceInput, out userGaveAnInt);
+            bool isUserInputAInt = int.TryParse(chooseNameOrId, out userGaveAnInt);
             if (isUserInputAInt == true)
             {
                 // If user has input a number, try to match with an ID from a row in the list
                 // If the number is a hit as an ID proceed to get the definition from the audience ID
-                var result = audienceData.Find(x => x.Key == audienceInput);
+                var result = audienceData.Find(x => x.Key == chooseNameOrId);
 
                 returnAudID = result.Key;
                 Console.WriteLine($"Matching Audience ID found = {returnAudID}");
@@ -326,7 +313,7 @@ namespace GroupApi
             {
                 // If user has input a string, try to match string with the first row in the list that has the correct name
                 // If name and ID is a hit, then proceed to get definition
-                var result = audienceData.Find(x => x.Value.ToLower() == audienceInput.ToLower());
+                var result = audienceData.Find(x => x.Value.ToLower() == chooseNameOrId.ToLower());
 
                 returnAudID = result.Key;
 
@@ -341,7 +328,6 @@ namespace GroupApi
                 }
             }
             // Return ID to pass into another method
-            Console.ReadLine();
             return returnAudID;
         }
 

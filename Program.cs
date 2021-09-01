@@ -25,6 +25,7 @@ namespace ApiMethods1
             _EmeraldApi.GetAuthToken();
             _EmeraldApi.CheckIfTempFolder();
             _EmeraldApi.GetAudiences();
+            _EmeraldApi.PickAudience(_EmeraldApi.audienceListResponse, "3");
 
             #region timing please
 

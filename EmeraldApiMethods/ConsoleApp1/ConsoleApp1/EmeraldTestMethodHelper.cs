@@ -8,7 +8,7 @@ namespace GroupApi.EmeraldApiMethods.ConsoleApp1.ConsoleApp1
 {
     public class EmeraldTestMethodHelper
     {
-
+        
         public string logFilePath = "";
         public string logPathRoot = @"C:\Users\emera\temp\OrbitTests";
 
@@ -17,11 +17,6 @@ namespace GroupApi.EmeraldApiMethods.ConsoleApp1.ConsoleApp1
             logFilePath = string.Join(@"\", logPathRoot, testName);
             string record = Environment.NewLine + DateTime.Now + ":  " + testName + ", " +  elapsed.ToString() + ", " + testResult;
             File.AppendAllText(logFilePath, record);
-        }
-
-        public int GetNumberInList(List<string> Titles)
-        {
-
         }
     }
 }
